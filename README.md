@@ -3,6 +3,8 @@ Laravel package - api document generator
 
 # sample usage
 ```
+#routes file
+
 use Nunahsan\ApiDocs\Docs;
 
 Route::get('/docs', function (Request $request) {
@@ -25,5 +27,35 @@ Route::get('/docs', function (Request $request) {
                 'endpoint_live' => 'https://endoint3'
     ]);
 });
+
+# controller file
+
+public function method1(Request $request) {
+    $ApiDocs = [
+        "url" => "/api/test1",
+        "method" => "POST",
+        "description" => "This is api description",
+        "validation" => [
+            "header" => [
+                "content-type" => "required|string|description:application/json",
+                "authorization" => "required|string|description:Bearer Token"
+            ],
+            "body" => [
+                "name" => "required|string|max:50|min:3|description:hello world",
+                "description" => "required|string|min:3|max:200",
+                "status" => "required|integer|in:0,1",
+                "seq" => "required|integer|min:0",
+                "image_url" => "required|string|min:5",
+                "banner" => "integer|in:1,2"
+            ]
+        ]
+    ];
+
+    $validator = Validator::make($request->all(), $ApiDocs['validation']['body']);
+
+    if ($validator->fails()) {
+        return Response()->json($validator->errors());
+    }
+}
 
 ```
