@@ -1,6 +1,6 @@
 {
     "name": "nunahsan/apidocs",
-    "description": "A simple pagination package for laravel",
+    "description": "Provide API generator for laravel",
     "type": "library",
     "require": {
         "illuminate/support": "^9.0"
