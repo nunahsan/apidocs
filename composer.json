@@ -1,0 +1,22 @@
+{
+    "name": "nunahsan/apidocs",
+    "description": "A simple pagination package for laravel",
+    "type": "library",
+    "require": {
+        "illuminate/support": "^9.0"
+    },
+    "require-dev": {},
+    "license": "MIT",
+    "autoload": {
+        "psr-4": {
+            "Nunahsan\\ApiDocs\\": "src/"
+        }
+    },
+    "authors": [
+        {
+            "name": "nunahsan",
+            "email": "hasannawi@gmail.com"
+        }
+    ],
+    "minimum-stability": "dev"
+}
