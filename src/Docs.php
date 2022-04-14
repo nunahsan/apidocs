@@ -58,6 +58,46 @@ class Docs extends \Illuminate\Support\ServiceProvider {
         $str = str_replace(']', '}', $str);
         $str = str_replace('=>', ':', $str);
 
+        preg_match_all('/\w+::.*?\)/is', $str, $matches, PREG_UNMATCHED_AS_NULL);
+        if (isset($matches[0])) {
+            foreach ((array) $matches[0] as $c) {
+                $str = str_replace($c, '"' . $c . '"', $str);
+            }
+        }
+
+
+        $str = preg_replace('/\s+/', ' ', $str);
+        $arrReplace = [',', ':', '{', '}'];
+        foreach ($arrReplace as $v) {
+            $str = str_replace(" $v ", $v, $str);
+            $str = str_replace("$v ", $v, $str);
+            $str = str_replace(" $v", $v, $str);
+        }
+
+        $body = [];
+
+        //take body part
+        preg_match('/"body":{(.*[^}]})}/is', $str, $matches, PREG_UNMATCHED_AS_NULL);
+        if (!empty($matches) && isset($matches[1])) {
+            $matches = $matches[1];
+
+            preg_match_all('/("\w+":".*?")|("\w+":{.*?})/is', $matches, $matches, PREG_UNMATCHED_AS_NULL);
+            if (!empty($matches)) {
+                $matches = $matches[0];
+                foreach ((array) $matches as $v) {
+                    if (str_contains($v, '{') && str_contains($v, '}')) {
+                        $v = str_replace('","', '|', $v);
+                        $v = str_replace('{', '', $v);
+                        $v = str_replace('}', '', $v);
+                    }
+                    $body[] = $v;
+                }
+            }
+        }
+
+        $body = implode(',', $body);
+        $str = preg_replace('/"body":{.*?[^}]}}/is', '"body":{' . $body . '}', $str);
+
         $arrs = json_decode($str, true);
         if (empty($arrs)) {
             return;
@@ -77,6 +117,8 @@ class Docs extends \Illuminate\Support\ServiceProvider {
 
             $description = NULL;
             $extra = [];
+
+            p($v, true);
             foreach ((array) $x as $v2) {
                 $y = explode(':', $v2);
                 if (count($y) == 2) {
@@ -89,6 +131,11 @@ class Docs extends \Illuminate\Support\ServiceProvider {
                     } else if ($y[0] == 'max') {
                         $extra['length']['max'] = $y[1];
                     }
+                } else if (count($y) == 3) {
+                    if (!isset($extra['addonRule'])) {
+                        $extra['addonRule'] = [];
+                    }
+                    $extra['addonRule'][] = $y[0] . ':' . $y[2];
                 }
             }
 
@@ -124,7 +171,7 @@ class Docs extends \Illuminate\Support\ServiceProvider {
     public static function getApiList() {
         return self::$api_list;
     }
-    
+
     public static function cleanUpRule($apiDocs = []) {
         $res = $apiDocs['validation']['body'] ?? [];
         foreach ((array) $res as $attribute => $rule) {
