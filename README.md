@@ -58,4 +58,5 @@ public function method1(Request $request) {
 }
 
 ```
-# Important Note : Referring to sample controller file above, all parameter are using double quotes (") instead og single quote (') . 
+# Important Note : 
+* Referring to sample controller file above, all parameter are using double quotes (") instead og single quote (') . 
