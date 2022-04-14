@@ -57,9 +57,7 @@
                     <div class="mt-2 mb-5 head" id="list-item-x">
                         <h5>{{$header['title']}}</h5>
                         <h6>Version: {{$header['version']}}</h6>
-                        <h6>API End Point (Development): <i>{{$header['endpoint_development']}}</i></h6>
-                        <h6>API End Point (Sandbox): <i>{{$header['endpoint_sandbox']}}</i></h6>
-                        <h6>API End Point (Live): <i>{{$header['endpoint_live']}}</i></h6>
+                        <h6>API End Point: <i>{{$header['endpoint']}}</i></h6>
                     </div>
 
                     <?php $key = -1; ?>
