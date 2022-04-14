@@ -167,15 +167,15 @@ class Docs extends \Illuminate\Support\ServiceProvider {
     }
 
     protected static function defineType($array = []) {
-        $type = 'string';
+        $type = 'String';
         if (in_array('integer', $array)) {
-            $type = 'integer';
+            $type = 'Integer';
         } else if (in_array('array', $array)) {
-            $type = 'array';
+            $type = 'Array';
         } else if (in_array('boolean', $array)) {
-            $type = 'boolean';
+            $type = 'Boolean';
         } else if (in_array('email', $array)) {
-            $type = 'email';
+            $type = 'Email';
         }
         return $type;
     }
