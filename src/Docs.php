@@ -98,6 +98,18 @@ class Docs extends \Illuminate\Support\ServiceProvider {
         $body = implode(',', $body);
         $str = preg_replace('/"body":{.*?[^}]}}/is', '"body":{' . $body . '}', $str);
 
+        preg_match_all('/\{/is', $str, $curlyOpen, PREG_UNMATCHED_AS_NULL);
+        if (!empty($curlyOpen)) {
+            $opening = count($curlyOpen[0]);
+            preg_match_all('/\}/is', $str, $curlyClose, PREG_UNMATCHED_AS_NULL);
+            if (!empty($curlyClose)) {
+                $closing = count($curlyClose[0]);
+                if ($opening > $closing) {
+                    $str .= str_repeat("}",$opening-$closing);
+                }
+            }
+        }
+
         $arrs = json_decode($str, true);
         if (empty($arrs)) {
             return;
@@ -118,7 +130,6 @@ class Docs extends \Illuminate\Support\ServiceProvider {
             $description = NULL;
             $extra = [];
 
-            p($v, true);
             foreach ((array) $x as $v2) {
                 $y = explode(':', $v2);
                 if (count($y) == 2) {
