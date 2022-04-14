@@ -22,9 +22,7 @@ Route::get('/docs', function (Request $request) {
             ->with('header', [
                 'title' => 'API For ' . env('APP_NAME'),
                 'version' => 'V1.0',
-                'endpoint_development' => 'https://endoint1',
-                'endpoint_sandbox' => 'https://endoint2',
-                'endpoint_live' => 'https://endoint3'
+                'endpoint' => 'https://endoint.api.com'
     ]);
 });
 
