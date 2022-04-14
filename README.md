@@ -25,7 +25,8 @@ Route::get('/docs', function (Request $request) {
                 'endpoint' => 'https://endoint.api.com'
     ]);
 });
-
+```
+```
 # controller file
 
 public function method1(Request $request) {
