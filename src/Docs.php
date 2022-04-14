@@ -74,6 +74,10 @@ class Docs extends \Illuminate\Support\ServiceProvider {
             $str = str_replace(" $v", $v, $str);
         }
 
+        $str = preg_replace("/'(\w+)'/is", '"$1"', $str);
+        $str = preg_replace("/'(.*?\'.*?)'/is", '"$1"', $str);
+        $str = preg_replace("/(\\\')/is", "'", $str);
+
         $body = [];
 
         //take body part
@@ -105,7 +109,7 @@ class Docs extends \Illuminate\Support\ServiceProvider {
             if (!empty($curlyClose)) {
                 $closing = count($curlyClose[0]);
                 if ($opening > $closing) {
-                    $str .= str_repeat("}",$opening-$closing);
+                    $str .= str_repeat("}", $opening - $closing);
                 }
             }
         }
@@ -119,6 +123,7 @@ class Docs extends \Illuminate\Support\ServiceProvider {
 
         $arrs['body'] = self::constructorElement($arrs['validation']['body']);
         $arrs['header'] = self::constructorElement($arrs['validation']['header']);
+
         self::$json_output[$className][$methodName] = $arrs;
     }
 
