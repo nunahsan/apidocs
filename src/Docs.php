@@ -124,5 +124,28 @@ class Docs extends \Illuminate\Support\ServiceProvider {
     public static function getApiList() {
         return self::$api_list;
     }
+    
+    public static function cleanUpRule($apiDocs = []) {
+        $res = $apiDocs['validation']['body'] ?? [];
+        foreach ((array) $res as $attribute => $rule) {
+            if (is_array($rule)) {
+                unset($res[$attribute]['description']);
+                foreach ((array) $rule as $k => $rule2) {
+                    if ($rule2 == 'description' || (is_string($rule2) && substr($rule2, 0, 12) == 'description:')) {
+                        unset($res[$attribute][$k]);
+                    }
+                }
+            } else {
+                $x = explode('|', $rule);
+                foreach ((array) $x as $k => $rule) {
+                    if (substr($rule, 0, 12) == 'description:') {
+                        unset($x[$k]);
+                    }
+                }
+                $res[$attribute] = implode('|', $x);
+            }
+        }
+        return $res;
+    }
 
 }
