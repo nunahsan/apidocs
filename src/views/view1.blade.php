@@ -4,7 +4,7 @@
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
-        <title>Hello, Hasan!</title>
+        <title>API Documentation</title>
         <style>
             body{
                 position:relative;
@@ -39,9 +39,6 @@
         </style>
     </head>
     <body >
-       
-        
-        
         <div class="container-fluid">
             <div class="panel-right">
                 <div id="list-example" class="list-group mt-2">
@@ -65,7 +62,7 @@
                         @foreach($class as $method) 
                             <?php $key++; ?>
                             <div id="list-item-{{$key}}" class="card text-dark mb-4">
-                                <div class="card-header text-primary">{{$method['method']}} {{$method['url']}}</div>
+                                <div class="card-header text-primary"><b>{{$method['name']}} :</b> {{$method['method']}} {{$method['url']}}</div>
                                 <div class="card-body">
                                     <h6>Description :</h6>
                                     <p>{{$method['description']}}</p>
@@ -81,17 +78,22 @@
                                                 <th>Description</th>
                                             </tr>
                                         </thead>
+                                        <tbody>
                                         @foreach($method['header'] as $item) 
-                                            <tbody>
-                                                <tr>
-                                                    <td>{{$item['param']}}</td>
-                                                    <td>{{$item['type']}}</td>
-                                                    <td>{{$item['required']?'Yes':'No'}}</td>
-                                                    <td>{{$item['extra']!='[]'?$item['extra']:''}}</td>
-                                                    <td>{{$item['description']}}</td>
-                                                </tr>
-                                            </tbody>
+                                            <tr>
+                                                <td>{{$item['param']}}</td>
+                                                <td>{{$item['type']}}</td>
+                                                <td>{{$item['required']?'Yes':'No'}}</td>
+                                                <td>{{$item['extra']!='[]'?$item['extra']:''}}</td>
+                                                <td>{{$item['description']}}</td>
+                                            </tr>
                                         @endforeach
+                                        @if(empty($method['header']))
+                                            <tr>
+                                                <td colspan="5"><i>N/A</i></td>
+                                            </tr>
+                                        @endif
+                                        </tbody>
                                     </table>
 
                                     <h6>Body :</h6>
@@ -105,17 +107,22 @@
                                                 <th>Description</th>
                                             </tr>
                                         </thead>
+                                        <tbody>
                                         @foreach($method['body'] as $item) 
-                                            <tbody>
-                                                <tr>
-                                                    <td>{{$item['param']}}</td>
-                                                    <td>{{$item['type']}}</td>
-                                                    <td>{{$item['required']?'Yes':'No'}}</td>
-                                                    <td>{{$item['extra']!='[]'?$item['extra']:''}}</td>
-                                                    <td>{{$item['description']}}</td>
-                                                </tr>
-                                            </tbody>
+                                            <tr>
+                                                <td>{{$item['param']}}</td>
+                                                <td>{{$item['type']}}</td>
+                                                <td>{{$item['required']?'Yes':'No'}}</td>
+                                                <td>{{$item['extra']!='[]'?$item['extra']:''}}</td>
+                                                <td>{{$item['description']}}</td>
+                                            </tr>
                                         @endforeach
+                                        @if(empty($method['body']))
+                                            <tr>
+                                                <td colspan="5"><i>N/A</i></td>
+                                            </tr>
+                                        @endif
+                                        </tbody>
                                     </table>
                                 </div>
                             </div>
