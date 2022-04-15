@@ -10,6 +10,9 @@ class Docs extends \Illuminate\Support\ServiceProvider {
     protected static $objects = [];
     protected static $json_output = [];
     protected static $api_list = [];
+    protected static $reserveChar = [
+        'Ø', 'Ì', 'Í', '‡', 'Š', 'Œ', 'œ'
+    ];
 
     public function boot() {
         $this->loadViewsFrom(__DIR__ . '/views', 'apidocs');
@@ -31,7 +34,81 @@ class Docs extends \Illuminate\Support\ServiceProvider {
         }
     }
 
-    protected static function processValidationRule($className, $methodName) {
+    protected static function regex_cleanup($str) {
+        preg_match('/\$ApiDocs.*?(\[.*?[^\]]\]);/is', $str, $str);
+        if (!empty($str)) {
+            return $str[1];
+        }
+        return false;
+    }
+
+    protected static function regex_cleanup2($str) {
+        $rs = self::$reserveChar;
+        $codeChar = ['[', ']', '=>', '::', '{', ']'];
+
+        $str = preg_replace("/\\\'/is", $rs[0], $str);
+        $str = preg_replace('/\\\"/is', "$rs[0]$rs[0]", $str);
+        $str = preg_replace("/'(\w+)'/is", '"$1"', $str);
+        $str = preg_replace('/\s+/', ' ', $str);
+
+        $str = preg_replace_callback('/".*?[^"]"/is', function ($m) use ($rs, $codeChar) {
+            $m[0] = str_replace("'", $rs[0], $m[0]);
+            foreach ((array) $codeChar as $k => $v) {
+                $m[0] = str_replace($v, $rs[(int) $k + 1], $m[0]);
+            }
+            return $m[0];
+        }, $str);
+
+        $str = preg_replace_callback("/'.*?[^']'/is", function ($m) use ($rs, $codeChar) {
+            $m[0] = str_replace('"', $rs[0], $m[0]);
+            foreach ((array) $codeChar as $k => $v) {
+                $m[0] = str_replace($v, $rs[(int) $k + 1], $m[0]);
+            }
+            return $m[0];
+        }, $str);
+
+        $str = preg_replace("/'(.*?[^'])'/", '"$1"', $str);
+        $str = preg_replace("/(\w+::.*?[^,])([,\s\]])/", '"$1"$2', $str);
+
+        //process body
+        $done = false;
+        while (!$done) {
+            $strNew = self::regex_body_array_to_string($str);
+            if ($str == $strNew) {
+                $done = true;
+            } else {
+                $str = $strNew;
+            }
+        }
+
+        //process extra comma
+        $str = preg_replace("/,\s+\]/", ']', $str);
+
+        //replace php syntax to json syntax
+        $str = str_replace('[', '{', $str);
+        $str = str_replace(']', '}', $str);
+        $str = str_replace('=>', ':', $str);
+
+        //store back original content
+        $str = str_replace("$rs[0]$rs[0]", '\"', $str);
+        $str = str_replace($rs[0], "'", $str);
+        foreach ((array) $codeChar as $k => $v) {
+            $str = str_replace($rs[(int) $k + 1], $v, $str);
+        }
+
+        return $str;
+    }
+
+    protected static function regex_body_array_to_string($str) {
+        $str = preg_replace_callback('/("body".*?=>.*?\[.*?)(\[.*?\])/is', function ($m) {
+            $m[2] = preg_replace("/,\s+\]/", ']', $m[2]);
+            $m[2] = '"' . implode('|', json_decode($m[2], true)) . '"';
+            return $m[1] . $m[2];
+        }, $str);
+        return $str;
+    }
+
+    protected static function get_content($className, $methodName) {
         $func = new ReflectionMethod($className, $methodName);
         $f = $func->getFileName();
         $start_line = $func->getStartLine();
@@ -41,89 +118,32 @@ class Docs extends \Illuminate\Support\ServiceProvider {
         $source = implode('', array_slice($source, 0, count($source)));
         $source = preg_split("/" . PHP_EOL . "/", $source);
 
-        $body = '';
+        $content = '';
         for ($i = $start_line; $i < $end_line; $i++) {
-            $body .= "{$source[$i]}\n";
+            $content .= "{$source[$i]}\n";
         }
 
-        preg_match('/\$ApiDocs \= (\[.*?\])\;/is', $body, $matches, PREG_UNMATCHED_AS_NULL);
+        return $content;
+    }
 
-        if (!isset($matches[1])) {
-            return;
-        }
+    protected static function processValidationRule($className, $methodName) {
+        $str = self::get_content($className, $methodName);
 
-        $str = $matches[1];
+        //get $ApiDocs data
+        $str = self::regex_cleanup($str);
 
-        $str = str_replace('[', '{', $str);
-        $str = str_replace(']', '}', $str);
-        $str = str_replace('=>', ':', $str);
+        //process using regex
+        $str = self::regex_cleanup2($str);
 
-        preg_match_all('/\w+::.*?\)/is', $str, $matches, PREG_UNMATCHED_AS_NULL);
-        if (isset($matches[0])) {
-            foreach ((array) $matches[0] as $c) {
-                $str = str_replace($c, '"' . $c . '"', $str);
-            }
-        }
-
-
-        $str = preg_replace('/\s+/', ' ', $str);
-        $arrReplace = [',', ':', '{', '}'];
-        foreach ($arrReplace as $v) {
-            $str = str_replace(" $v ", $v, $str);
-            $str = str_replace("$v ", $v, $str);
-            $str = str_replace(" $v", $v, $str);
-        }
-
-        $str = preg_replace("/'(\w+)'/is", '"$1"', $str);
-        $str = preg_replace("/'(.*?\'.*?)'/is", '"$1"', $str);
-        $str = preg_replace("/(\\\')/is", "'", $str);
-
-        $body = [];
-
-        //take body part
-        preg_match('/"body":{(.*[^}]})}/is', $str, $matches, PREG_UNMATCHED_AS_NULL);
-        if (!empty($matches) && isset($matches[1])) {
-            $matches = $matches[1];
-
-            preg_match_all('/("\w+":".*?")|("\w+":{.*?})/is', $matches, $matches, PREG_UNMATCHED_AS_NULL);
-            if (!empty($matches)) {
-                $matches = $matches[0];
-                foreach ((array) $matches as $v) {
-                    if (str_contains($v, '{') && str_contains($v, '}')) {
-                        $v = str_replace('","', '|', $v);
-                        $v = str_replace('{', '', $v);
-                        $v = str_replace('}', '', $v);
-                    }
-                    $body[] = $v;
-                }
-            }
-        }
-
-        $body = implode(',', $body);
-        $str = preg_replace('/"body":{.*?[^}]}}/is', '"body":{' . $body . '}', $str);
-
-        preg_match_all('/\{/is', $str, $curlyOpen, PREG_UNMATCHED_AS_NULL);
-        if (!empty($curlyOpen)) {
-            $opening = count($curlyOpen[0]);
-            preg_match_all('/\}/is', $str, $curlyClose, PREG_UNMATCHED_AS_NULL);
-            if (!empty($curlyClose)) {
-                $closing = count($curlyClose[0]);
-                if ($opening > $closing) {
-                    $str .= str_repeat("}", $opening - $closing);
-                }
-            }
-        }
-
+        //convert to json
         $arrs = json_decode($str, true);
         if (empty($arrs)) {
             return;
         }
 
-        self::$api_list[] = $arrs['url'];
-
+        self::$api_list[] = $arrs['name'];
         $arrs['body'] = self::constructorElement($arrs['validation']['body']);
         $arrs['header'] = self::constructorElement($arrs['validation']['header']);
-
         self::$json_output[$className][$methodName] = $arrs;
     }
 
@@ -137,10 +157,15 @@ class Docs extends \Illuminate\Support\ServiceProvider {
 
             foreach ((array) $x as $v2) {
                 $y = explode(':', $v2);
-                if (count($y) == 2) {
-                    if ($y[0] == 'description') {
-                        $description = $y[1];
-                    } else if ($y[0] == 'in') {
+
+                if ($y[0] == 'description') {
+                    $desc = [];
+                    for ($i = 1; $i < count($y); $i++) {
+                        $desc[] = $y[$i];
+                    }
+                    $description = implode('', $desc);
+                } else if (count($y) == 2) {
+                    if ($y[0] == 'in') {
                         $extra['options'] = explode(',', $y[1]);
                     } else if ($y[0] == 'min') {
                         $extra['length']['min'] = $y[1];
@@ -162,6 +187,16 @@ class Docs extends \Illuminate\Support\ServiceProvider {
                 'description' => $description,
                 'extra' => json_encode($extra)
             ];
+
+            if ($k == 'password' && in_array('confirmed', $x)) {
+                $elems[] = [
+                    'param' => 'password_confirmation',
+                    'required' => in_array('required', $x),
+                    'type' => self::defineType($x),
+                    'description' => $description,
+                    'extra' => json_encode($extra)
+                ];
+            }
         }
         return $elems;
     }
