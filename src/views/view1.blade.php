@@ -36,6 +36,15 @@
             .list-group-item {
                 font-size:14px;
             }
+            code {
+                display: block;
+                background-color: #333;
+                color:#fff;
+                border-radius: 3px;
+                padding:0 10px 10px;
+                white-space: pre-wrap;
+                font-family: monospace, sans-serif;
+            }
         </style>
     </head>
     <body >
