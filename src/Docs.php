@@ -140,6 +140,8 @@ class Docs extends \Illuminate\Support\ServiceProvider {
         if (empty($arrs)) {
             return;
         }
+        
+        $arrs['response'] = isset($arrs['response']) ? json_decode(preg_replace("/'(.*?[^'])'/is", '"$1"', $arrs['response']), true, 512, JSON_BIGINT_AS_STRING) : [];
 
         self::$api_list[] = $arrs['name'];
         $arrs['body'] = self::constructorElement($arrs['validation']['body']);
