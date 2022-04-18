@@ -213,6 +213,8 @@ class Docs extends \Illuminate\Support\ServiceProvider {
             $type = 'Boolean';
         } else if (in_array('email', $array)) {
             $type = 'Email';
+        }else if (in_array('date_format:Y-m-d H:i:s', $array)) {
+            $type = 'DateTime Y-m-d H:i:s';
         }
         return $type;
     }
