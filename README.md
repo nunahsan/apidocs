@@ -48,7 +48,8 @@ public function method1(Request $request) {
                 "image_url" => "required|string|min:5",
                 "banner" => "integer|in:1,2"
             ]
-        ]
+        ],
+        "response" => '{"data":"timezone":"Asia\/Kuala_Lumpur","environment":"development","execution_duration":"0.012310028076172 sec","log_id":"760497ff-5a22-48c8-aa09-4fb42e502be1","message":"Granted"}'
     ];
 
     $validator = Validator::make($request->all(), $ApiDocs['validation']['body']);
