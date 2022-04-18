@@ -2,6 +2,7 @@
 <html lang="en">
     <head>
         <meta charset="utf-8">
+        <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1" />
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
         <title>API Documentation</title>
@@ -36,13 +37,12 @@
             .list-group-item {
                 font-size:14px;
             }
-            code {
+            pre {
                 display: block;
                 background-color: #333;
                 color:#fff;
                 border-radius: 3px;
                 padding:0 10px 10px;
-                white-space: pre-wrap;
                 font-family: monospace, sans-serif;
             }
         </style>
@@ -136,7 +136,7 @@
                                     
                                     <h6><b>Sample Response :</b></h6>
                                     <div>
-                                        <code>{{json_encode($method['response'],JSON_PRETTY_PRINT|JSON_UNESCAPED_SLASHES)}}</code>
+                                        <pre>{{json_encode($method['response'],JSON_PRETTY_PRINT|JSON_UNESCAPED_SLASHES)}}</pre>
                                     </div>                                    
                                 </div>
                             </div>
