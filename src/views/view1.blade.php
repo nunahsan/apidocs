@@ -133,6 +133,11 @@
                                         @endif
                                         </tbody>
                                     </table>
+                                    
+                                    <h6><b>Sample Response :</b></h6>
+                                    <div>
+                                        <code>{{json_encode($method['response'],JSON_PRETTY_PRINT|JSON_UNESCAPED_SLASHES)}}</code>
+                                    </div>                                    
                                 </div>
                             </div>
                         @endforeach
