@@ -59,6 +59,13 @@ class Docs extends \Illuminate\Support\ServiceProvider {
             return $m[0];
         }, $str);
 
+        //take out response attribute
+        preg_match("/\"response\".*?('.*?[^']')/is", $str, $strResponse);
+        if (!empty($strResponse) && isset($strResponse[1])) {
+            $strResponse = $strResponse[1];
+            $str = preg_replace("/(\"response\".*?)('.*?[^']')/is", '$1__RESPONSE__', $str);
+        }
+
         $str = preg_replace_callback("/'.*?[^']'/is", function ($m) use ($rs, $codeChar) {
             $m[0] = str_replace('"', $rs[0], $m[0]);
             foreach ((array) $codeChar as $k => $v) {
@@ -89,6 +96,13 @@ class Docs extends \Illuminate\Support\ServiceProvider {
         $str = str_replace(']', '}', $str);
         $str = str_replace('=>', ':', $str);
 
+        //put back response attribute
+        if ($strResponse) {
+            $strResponse = preg_replace('/"(.*?[^"])"/is','\"$1\"',$strResponse);
+            $strResponse = preg_replace("/'(.*?[^'])'/is",'"$1"',$strResponse);
+            $str = str_replace('__RESPONSE__', $strResponse, $str);
+        }
+        
         //store back original content
         $str = str_replace("$rs[0]$rs[0]", '\"', $str);
         $str = str_replace($rs[0], "'", $str);
@@ -140,7 +154,7 @@ class Docs extends \Illuminate\Support\ServiceProvider {
         if (empty($arrs)) {
             return;
         }
-        
+
         $arrs['response'] = isset($arrs['response']) ? json_decode(preg_replace("/'(.*?[^'])'/is", '"$1"', $arrs['response']), true, 512, JSON_BIGINT_AS_STRING) : [];
 
         self::$api_list[] = $arrs['name'];
@@ -213,7 +227,7 @@ class Docs extends \Illuminate\Support\ServiceProvider {
             $type = 'Boolean';
         } else if (in_array('email', $array)) {
             $type = 'Email';
-        }else if (in_array('date_format:Y-m-d H:i:s', $array)) {
+        } else if (in_array('date_format:Y-m-d H:i:s', $array)) {
             $type = 'DateTime Y-m-d H:i:s';
         }
         return $type;
