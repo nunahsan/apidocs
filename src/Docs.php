@@ -98,11 +98,11 @@ class Docs extends \Illuminate\Support\ServiceProvider {
 
         //put back response attribute
         if ($strResponse) {
-            $strResponse = preg_replace('/"(.*?[^"])"/is','\"$1\"',$strResponse);
-            $strResponse = preg_replace("/'(.*?[^'])'/is",'"$1"',$strResponse);
+            $strResponse = preg_replace('/"(.*?[^"])"/is', '\"$1\"', $strResponse);
+            $strResponse = preg_replace("/'(.*?[^'])'/is", '"$1"', $strResponse);
             $str = str_replace('__RESPONSE__', $strResponse, $str);
         }
-        
+
         //store back original content
         $str = str_replace("$rs[0]$rs[0]", '\"', $str);
         $str = str_replace($rs[0], "'", $str);
